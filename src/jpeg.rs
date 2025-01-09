@@ -138,9 +138,9 @@ pub struct App1 {
 }
 
 impl App1 {
-    pub fn tiff(&self) -> Tiff {
+    pub fn tiff(&self) -> crate::Result<Tiff> {
         let mut cursor = Cursor::new(&self.data);
-        Tiff::new(&mut cursor)
+        Ok(Tiff::new(&mut cursor)?)
     }
 }
 
@@ -291,18 +291,19 @@ impl Jpeg {
     pub fn new<R: std::io::BufRead + std::io::Seek>(reader: &mut R) -> crate::Result<Self> {
         let mut jpeg = Jpeg::read(reader)?;
 
-        jpeg.segments.iter().for_each(|seg| {
+        for seg in &jpeg.segments {
             if let Segment::App0(app0) = seg {
                 jpeg.x_dpi = app0.x_dpi();
                 jpeg.y_dpi = app0.y_dpi();
             } else if let Segment::App1(app1) = seg {
-                jpeg.x_dpi = app1.tiff().x_dpi();
-                jpeg.y_dpi = app1.tiff().x_dpi();
+                let tiff = app1.tiff()?;
+                jpeg.x_dpi = tiff.x_dpi();
+                jpeg.y_dpi = tiff.x_dpi();
             } else if let Segment::SOF(sof) = seg {
                 jpeg.width = sof.width as u32;
                 jpeg.height = sof.height as u32;
             }
-        });
+        }
 
         Ok(jpeg)
     }

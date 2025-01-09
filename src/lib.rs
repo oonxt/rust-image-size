@@ -24,6 +24,8 @@ pub enum Error {
     ParseError(#[from] binrw::Error)
 }
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Debug)]
 pub enum Image {
     Bmp(Bmp),
     Gif(Gif),
@@ -35,9 +37,10 @@ pub enum Image {
 impl Image {
 
     pub fn from_file(path: &str) -> Result<Image> {
-        let ext = path.split('.').last().ok_or(Error::CommonError("文件名不正确".to_string()))?.to_lowercase().as_str();
+        let ext = path.clone().split('.').last().ok_or(Error::CommonError("文件名不正确".to_string()))?.to_lowercase();
+
         let mut reader = Cursor::new(std::fs::read(path)?);
-        match ext {
+        match ext.as_str() {
             "bmp" => Ok(Image::Bmp(Bmp::new(&mut reader)?)),
             "gif" => Ok(Image::Gif(Gif::new(&mut reader)?)),
             "jpeg" | "jpg" => Ok(Image::Jpeg(Jpeg::new(&mut reader)?)),
