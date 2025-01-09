@@ -1,8 +1,9 @@
-use std::io::{BufRead, Read, Seek};
-use binrw::BinRead;
-use crate::ImageReader;
-use std::io::SeekFrom;
 use crate::length::Length;
+use crate::ImageReader;
+use crate::Result;
+use binrw::BinRead;
+use std::io::SeekFrom;
+use std::io::{BufRead, Read, Seek};
 
 const PPM_FACTOR: f32 = 0.0254;
 
@@ -20,13 +21,12 @@ pub struct Bmp {
 }
 
 impl Bmp {
-    pub fn new<R: BufRead + Seek>(reader: &mut R) -> Self {
-        Bmp::read(reader).unwrap()
+    pub fn new<R: BufRead + Seek>(reader: &mut R) -> Result<Self> {
+        Ok(Bmp::read(reader)?)
     }
 }
 
 impl ImageReader for Bmp {
-
     fn dimension(&self) -> (u32, u32) {
         (self.width, self.height)
     }
@@ -39,7 +39,6 @@ impl ImageReader for Bmp {
         _dpi(self.y_ppm)
     }
 }
-
 
 fn _dpi(ppm: u32) -> u32 {
     if ppm == 0 {

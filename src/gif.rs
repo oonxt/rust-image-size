@@ -1,7 +1,7 @@
-use std::io::{BufRead, Seek};
-use binrw::BinRead;
-use crate::ImageReader;
 use crate::length::Length;
+use crate::{ImageReader, Result};
+use binrw::BinRead;
+use std::io::{BufRead, Seek};
 
 #[derive(Debug, BinRead)]
 #[br(little)]
@@ -21,8 +21,8 @@ pub enum Type {
 }
 
 impl Gif {
-    pub fn new<R: BufRead + Seek>(reader: &mut R) -> Self {
-        Gif::read(reader).unwrap()
+    pub fn new<R: BufRead + Seek>(reader: &mut R) -> Result<Self> {
+        Ok(Gif::read(reader)?)
     }
 }
 

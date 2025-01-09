@@ -1,9 +1,9 @@
+use crate::tiff::{IfdEntry, Tiff};
+use crate::ImageReader;
+use binrw::helpers::{until, until_eof};
+use binrw::{BinRead, BinReaderExt};
 use std::cmp::PartialEq;
 use std::io::{BufRead, Cursor, Seek};
-use binrw::{BinRead, BinReaderExt};
-use binrw::helpers::{until_eof, until};
-use crate::ImageReader;
-use crate::tiff::{IfdEntry, Tiff};
 
 #[derive(BinRead, Debug)]
 #[br(big)]
@@ -20,8 +20,7 @@ pub struct Jpeg {
     segments: Vec<Segment>,
 }
 
-
-#[derive(BinRead, Debug, PartialEq)]
+#[derive(BinRead, Debug)]
 #[br(big)]
 pub enum Segment {
     #[br(magic = 0xFFD8u16)]
@@ -42,14 +41,12 @@ impl Segment {
     pub fn is_sos(&self) -> bool {
         match self {
             Segment::SOS(_) => true,
-            _ => {
-                false
-            },
+            _ => false,
         }
     }
 }
 
-#[derive(BinRead, Debug, PartialEq)]
+#[derive(BinRead, Debug)]
 #[br(big)]
 pub struct OtherSegment {
     pub marker: Marker,
@@ -58,7 +55,7 @@ pub struct OtherSegment {
     pub data: Vec<u8>,
 }
 
-#[derive(BinRead, Debug, PartialEq)]
+#[derive(BinRead, Debug)]
 #[br(big)]
 pub struct Sof {
     pub marker: SofMarker,
@@ -71,14 +68,14 @@ pub struct Sof {
     pub components: Vec<SofComponent>,
 }
 
-#[derive(BinRead, Debug, PartialEq)]
+#[derive(BinRead, Debug)]
 #[br(big)]
 pub struct SofComponent {
     pub component_id: u8,
     pub sampling_factors: u8, // [horizontal_sampling_factor, vertical_sampling_factor]
     pub quant_table_selector: u8,
 }
-#[derive(BinRead, Debug, PartialEq)]
+#[derive(BinRead, Debug)]
 #[br(big)]
 pub struct Sos {
     pub length: u16,
@@ -87,17 +84,17 @@ pub struct Sos {
     pub components: Vec<SosComponent>,
     pub spectral_selection: u8,
     pub successive_high: u8,
-    pub successive_low: u8
+    pub successive_low: u8,
 }
 
-#[derive(BinRead, Debug, PartialEq)]
+#[derive(BinRead, Debug)]
 #[br(big)]
 pub struct SosComponent {
     pub component_id: u8,
     pub huffman_table_selector: u8,
 }
 
-#[derive(BinRead, Debug, PartialEq)]
+#[derive(BinRead, Debug)]
 #[br(big)]
 pub struct App0 {
     pub length: u16,
@@ -131,7 +128,7 @@ impl App0 {
     }
 }
 
-#[derive(BinRead, Debug, PartialEq)]
+#[derive(BinRead, Debug)]
 #[br(big)]
 pub struct App1 {
     pub length: u16,
@@ -147,111 +144,152 @@ impl App1 {
     }
 }
 
-
 #[derive(Debug, PartialEq, BinRead)]
 #[br(big)]
 pub enum SofMarker {
-    #[br(magic(0xFFC0u16))] SOF0,
-    #[br(magic(0xFFC1u16))] SOF1,
-    #[br(magic(0xFFC2u16))] SOF2,
-    #[br(magic(0xFFC3u16))] SOF3,
-    #[br(magic(0xFFC5u16))] SOF5,
-    #[br(magic(0xFFC6u16))] SOF6,
-    #[br(magic(0xFFC7u16))] SOF7,
-    #[br(magic(0xFFC9u16))] SOF9,
-    #[br(magic(0xFFCAu16))] SOFA,
-    #[br(magic(0xFFCBu16))] SOFB,
-    #[br(magic(0xFFCDu16))] SOFD,
-    #[br(magic(0xFFCEu16))] SOFE,
-    #[br(magic(0xFFCFu16))] SOFF,
+    #[br(magic(0xFFC0u16))]
+    SOF0,
+    #[br(magic(0xFFC1u16))]
+    SOF1,
+    #[br(magic(0xFFC2u16))]
+    SOF2,
+    #[br(magic(0xFFC3u16))]
+    SOF3,
+    #[br(magic(0xFFC5u16))]
+    SOF5,
+    #[br(magic(0xFFC6u16))]
+    SOF6,
+    #[br(magic(0xFFC7u16))]
+    SOF7,
+    #[br(magic(0xFFC9u16))]
+    SOF9,
+    #[br(magic(0xFFCAu16))]
+    SOFA,
+    #[br(magic(0xFFCBu16))]
+    SOFB,
+    #[br(magic(0xFFCDu16))]
+    SOFD,
+    #[br(magic(0xFFCEu16))]
+    SOFE,
+    #[br(magic(0xFFCFu16))]
+    SOFF,
 }
 
 #[derive(Debug, PartialEq, BinRead)]
 #[br(big)]
 pub enum Marker {
-    #[br(magic(0xFF01u16))] TEM,
-    #[br(magic(0xFFC4u16))] DHT,
-    #[br(magic(0xFFCCu16))] DAC,
-    #[br(magic(0xFFC8u16))] JPG,
+    #[br(magic(0xFF01u16))]
+    TEM,
+    #[br(magic(0xFFC4u16))]
+    DHT,
+    #[br(magic(0xFFCCu16))]
+    DAC,
+    #[br(magic(0xFFC8u16))]
+    JPG,
 
-    #[br(magic(0xFFC0u16))] SOF0,
-    #[br(magic(0xFFC1u16))] SOF1,
-    #[br(magic(0xFFC2u16))] SOF2,
-    #[br(magic(0xFFC3u16))] SOF3,
-    #[br(magic(0xFFC5u16))] SOF5,
-    #[br(magic(0xFFC6u16))] SOF6,
-    #[br(magic(0xFFC7u16))] SOF7,
-    #[br(magic(0xFFC9u16))] SOF9,
-    #[br(magic(0xFFCAu16))] SOFA,
-    #[br(magic(0xFFCBu16))] SOFB,
-    #[br(magic(0xFFCDu16))] SOFD,
-    #[br(magic(0xFFCEu16))] SOFE,
-    #[br(magic(0xFFCFu16))] SOFF,
+    #[br(magic(0xFFC0u16))]
+    SOF0,
+    #[br(magic(0xFFC1u16))]
+    SOF1,
+    #[br(magic(0xFFC2u16))]
+    SOF2,
+    #[br(magic(0xFFC3u16))]
+    SOF3,
+    #[br(magic(0xFFC5u16))]
+    SOF5,
+    #[br(magic(0xFFC6u16))]
+    SOF6,
+    #[br(magic(0xFFC7u16))]
+    SOF7,
+    #[br(magic(0xFFC9u16))]
+    SOF9,
+    #[br(magic(0xFFCAu16))]
+    SOFA,
+    #[br(magic(0xFFCBu16))]
+    SOFB,
+    #[br(magic(0xFFCDu16))]
+    SOFD,
+    #[br(magic(0xFFCEu16))]
+    SOFE,
+    #[br(magic(0xFFCFu16))]
+    SOFF,
 
-    #[br(magic(0xFFD0u16))] RST0,
-    #[br(magic(0xFFD1u16))] RST1,
-    #[br(magic(0xFFD2u16))] RST2,
-    #[br(magic(0xFFD3u16))] RST3,
-    #[br(magic(0xFFD4u16))] RST4,
-    #[br(magic(0xFFD5u16))] RST5,
-    #[br(magic(0xFFD6u16))] RST6,
-    #[br(magic(0xFFD7u16))] RST7,
+    #[br(magic(0xFFD0u16))]
+    RST0,
+    #[br(magic(0xFFD1u16))]
+    RST1,
+    #[br(magic(0xFFD2u16))]
+    RST2,
+    #[br(magic(0xFFD3u16))]
+    RST3,
+    #[br(magic(0xFFD4u16))]
+    RST4,
+    #[br(magic(0xFFD5u16))]
+    RST5,
+    #[br(magic(0xFFD6u16))]
+    RST6,
+    #[br(magic(0xFFD7u16))]
+    RST7,
 
-    #[br(magic(0xFFD8u16))] SOI,
-    #[br(magic(0xFFD9u16))] EOI,
-    #[br(magic(0xFFDAu16))] SOS,
-    #[br(magic(0xFFDBu16))] DQT,
-    #[br(magic(0xFFDCu16))] DNL,
-    #[br(magic(0xFFDDu16))] DRI,
-    #[br(magic(0xFFDEu16))] DHP,
-    #[br(magic(0xFFDFu16))] EXP,
+    #[br(magic(0xFFD8u16))]
+    SOI,
+    #[br(magic(0xFFD9u16))]
+    EOI,
+    #[br(magic(0xFFDAu16))]
+    SOS,
+    #[br(magic(0xFFDBu16))]
+    DQT,
+    #[br(magic(0xFFDCu16))]
+    DNL,
+    #[br(magic(0xFFDDu16))]
+    DRI,
+    #[br(magic(0xFFDEu16))]
+    DHP,
+    #[br(magic(0xFFDFu16))]
+    EXP,
 
-    #[br(magic(0xFFE0u16))] APP0,
-    #[br(magic(0xFFE1u16))] APP1,
-    #[br(magic(0xFFE2u16))] APP2,
-    #[br(magic(0xFFE3u16))] APP3,
-    #[br(magic(0xFFE4u16))] APP4,
-    #[br(magic(0xFFE5u16))] APP5,
-    #[br(magic(0xFFE6u16))] APP6,
-    #[br(magic(0xFFE7u16))] APP7,
-    #[br(magic(0xFFE8u16))] APP8,
-    #[br(magic(0xFFE9u16))] APP9,
-    #[br(magic(0xFFEAu16))] APPA,
-    #[br(magic(0xFFEBu16))] APPB,
-    #[br(magic(0xFFECu16))] APPC,
-    #[br(magic(0xFFEDu16))] APPD,
-    #[br(magic(0xFFEEu16))] APPE,
-    #[br(magic(0xFFEFu16))] APPF,
+    #[br(magic(0xFFE0u16))]
+    APP0,
+    #[br(magic(0xFFE1u16))]
+    APP1,
+    #[br(magic(0xFFE2u16))]
+    APP2,
+    #[br(magic(0xFFE3u16))]
+    APP3,
+    #[br(magic(0xFFE4u16))]
+    APP4,
+    #[br(magic(0xFFE5u16))]
+    APP5,
+    #[br(magic(0xFFE6u16))]
+    APP6,
+    #[br(magic(0xFFE7u16))]
+    APP7,
+    #[br(magic(0xFFE8u16))]
+    APP8,
+    #[br(magic(0xFFE9u16))]
+    APP9,
+    #[br(magic(0xFFEAu16))]
+    APPA,
+    #[br(magic(0xFFEBu16))]
+    APPB,
+    #[br(magic(0xFFECu16))]
+    APPC,
+    #[br(magic(0xFFEDu16))]
+    APPD,
+    #[br(magic(0xFFEEu16))]
+    APPE,
+    #[br(magic(0xFFEFu16))]
+    APPF,
 
-    #[br(magic(0xFFFEu16))] COM,
+    #[br(magic(0xFFFEu16))]
+    COM,
 
     Other(u16),
 }
 
-impl Marker {
-    pub fn is_sof(&self) -> bool {
-        match self {
-            Marker::SOF0 |
-            Marker::SOF1 |
-            Marker::SOF2 |
-            Marker::SOF3 |
-            Marker::SOF5 |
-            Marker::SOF6 |
-            Marker::SOF7 |
-            Marker::SOF9 |
-            Marker::SOFA |
-            Marker::SOFB |
-            Marker::SOFD |
-            Marker::SOFE |
-            Marker::SOFF => true,
-            _ => false
-        }
-    }
-}
-
 impl Jpeg {
-    pub fn new<R: std::io::BufRead + std::io::Seek>(reader: &mut R) -> Self {
-        let mut jpeg = Jpeg::read(reader).unwrap();
+    pub fn new<R: std::io::BufRead + std::io::Seek>(reader: &mut R) -> crate::Result<Self> {
+        let mut jpeg = Jpeg::read(reader)?;
 
         jpeg.segments.iter().for_each(|seg| {
             if let Segment::App0(app0) = seg {
@@ -266,7 +304,7 @@ impl Jpeg {
             }
         });
 
-        jpeg
+        Ok(jpeg)
     }
 }
 
@@ -276,10 +314,10 @@ impl crate::ImageReader for Jpeg {
     }
 
     fn x_dpi(&self) -> u32 {
-        72
+        self.x_dpi
     }
 
     fn y_dpi(&self) -> u32 {
-        72
+        self.y_dpi
     }
 }

@@ -1,6 +1,6 @@
-use std::io::{BufRead, Cursor, Seek};
-use binrw::BinRead;
 use crate::ImageReader;
+use binrw::BinRead;
+use std::io::{BufRead, Cursor, Seek};
 
 #[derive(Debug)]
 pub struct Tiff {
@@ -24,7 +24,7 @@ pub enum ByteOrder {
     #[br(magic(0x4D4Du16))]
     Big,
     #[br(magic(0x4949u16))]
-    Little
+    Little,
 }
 
 #[derive(BinRead, Debug)]
@@ -46,13 +46,11 @@ pub struct IfdEntry {
     pub data_offset: u32,
 }
 
-impl IfdEntry{
-
+impl IfdEntry {
     pub fn read_value(&self) -> u32 {
         match self.data_type {
-            EntryType::Short |
-            EntryType::Long => self.data_value[0] as u32,
-            _ => self.data_offset
+            EntryType::Short | EntryType::Long => self.data_value[0] as u32,
+            _ => self.data_offset,
         }
     }
 }
@@ -94,15 +92,17 @@ fn _dpi(unit: u32, resolution: u32) -> u32 {
 }
 
 impl Tiff {
-    pub fn new<R: BufRead + Seek>(reader: &mut R) -> Self {
-        let header = TiffHeader::read_le(reader).unwrap();
+    pub fn new<R: BufRead + Seek>(reader: &mut R) -> crate::Result<Self> {
+        let header = TiffHeader::read_le(reader)?;
         let mut ifd: Ifd;
         if header.byte_order == ByteOrder::Little {
-            reader.seek(std::io::SeekFrom::Start(header.ifd0_offset as u64)).unwrap();
-            ifd = Ifd::read_le(reader).unwrap();
+            reader
+                .seek(std::io::SeekFrom::Start(header.ifd0_offset as u64))?;
+            ifd = Ifd::read_le(reader)?;
         } else {
-            reader.seek(std::io::SeekFrom::Start(header.ifd0_offset as u64)).unwrap();
-            ifd = Ifd::read_be(reader).unwrap();
+            reader
+                .seek(std::io::SeekFrom::Start(header.ifd0_offset as u64))?;
+            ifd = Ifd::read_be(reader)?;
         }
 
         let mut tiff = Tiff {
@@ -112,18 +112,16 @@ impl Tiff {
             y_resolution: 0,
             resolution_unit: 0,
         };
-        ifd.data.iter().for_each(|x| {
-            match x.tag {
-                TagType::ImageWidth => tiff.width = x.read_value(),
-                TagType::ImageLength => tiff.height = x.read_value(),
-                TagType::XResolution => tiff.x_resolution = x.read_value(),
-                TagType::YResolution => tiff.y_resolution = x.read_value(),
-                TagType::ResolutionUnit => tiff.resolution_unit = x.read_value(),
-                _ => {}
-            }
+        ifd.data.iter().for_each(|x| match x.tag {
+            TagType::ImageWidth => tiff.width = x.read_value(),
+            TagType::ImageLength => tiff.height = x.read_value(),
+            TagType::XResolution => tiff.x_resolution = x.read_value(),
+            TagType::YResolution => tiff.y_resolution = x.read_value(),
+            TagType::ResolutionUnit => tiff.resolution_unit = x.read_value(),
+            _ => {}
         });
 
-        tiff
+        Ok(tiff)
     }
 }
 

@@ -1,5 +1,4 @@
-
-pub const _EMUS_PER_INCH:f32 = 914400f32;
+pub const _EMUS_PER_INCH: f32 = 914400f32;
 pub const _EMUS_PER_CM: f32 = 360000f32;
 pub const _EMUS_PER_MM: f32 = 36000f32;
 pub const _EMUS_PER_PT: f32 = 12700f32;

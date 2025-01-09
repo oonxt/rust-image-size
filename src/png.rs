@@ -78,8 +78,8 @@ pub struct Info {
 }
 
 impl Png {
-    pub fn new<R: BufRead + Seek>(reader: &mut R) -> Self {
-        let mut png = Png::read(reader).unwrap();
+    pub fn new<R: BufRead + Seek>(reader: &mut R) -> crate::Result<Self> {
+        let mut png = Png::read(reader)?;
         let mut info = Info::default();
 
         png.chunks.iter().for_each(|c| {
@@ -93,7 +93,7 @@ impl Png {
             }
         });
         png.info = Some(info);
-        png
+        Ok(png)
     }
 }
 
@@ -125,7 +125,7 @@ impl ImageReader for Png {
 
 fn _dpi(unit: u32, ppm: u32) -> u32 {
     if unit == 1 {
-        (ppm  as f32 * 0.254) as u32
+        (ppm as f32 * 0.254) as u32
     } else {
         72
     }
