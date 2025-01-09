@@ -1,0 +1,15 @@
+[package]
+name = "rust-image-size"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+binrw = "0"
+
+[lib]
+name = "imagesize"
+path = "src/lib.rs"
+
+[[test]]
+name = "test"
+path = "tests/test.rs"
