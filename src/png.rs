@@ -1,5 +1,5 @@
 use crate::ImageReader;
-use binrw::helpers::until_eof;
+use binrw::helpers::until;
 use binrw::BinRead;
 use std::io::{BufRead, Seek};
 
@@ -10,7 +10,7 @@ pub struct Png {
     #[br(ignore)]
     pub info: Option<Info>,
 
-    #[br(parse_with = until_eof)]
+    #[br(parse_with = until(|chunk: &Chunk| chunk.is_end()))]
     chunks: Vec<Chunk>,
 }
 #[derive(Debug, BinRead)]
@@ -21,6 +21,16 @@ pub enum Chunk {
     PHYS(PHYSChunk),
     Other(OtherChunk),
 }
+
+impl Chunk {
+    pub fn is_end(&self) -> bool {
+        match self {
+            Chunk::IEND(_) => true,
+            _ => false,
+        }
+    }
+}
+
 #[derive(Debug, BinRead)]
 #[br(big)]
 pub struct IHDRChunk {
@@ -37,8 +47,6 @@ pub struct IHDRChunk {
 pub struct IENDChunk {
     pub length: u32,
     #[br(magic(b"IEND"))]
-    #[br(count=length)]
-    pub data: Vec<u8>,
     pub crc: u32,
 }
 #[derive(Debug, BinRead)]
@@ -48,9 +56,7 @@ pub struct PHYSChunk {
     #[br(magic(b"pHYs"))]
     pub x_ppm: u32,
     pub y_ppm: u32,
-    pub unit: u32,
-    #[br(count=length - 12)]
-    pub data: Vec<u8>,
+    pub unit: u8,
     pub crc: u32,
 }
 
@@ -89,7 +95,7 @@ impl Png {
             } else if let Chunk::PHYS(chunk) = c {
                 info.x_ppu = chunk.x_ppm;
                 info.y_ppu = chunk.y_ppm;
-                info.unit = chunk.unit;
+                info.unit = chunk.unit as u32;
             }
         });
         png.info = Some(info);
@@ -125,7 +131,7 @@ impl ImageReader for Png {
 
 fn _dpi(unit: u32, ppm: u32) -> u32 {
     if unit == 1 {
-        (ppm as f32 * 0.254) as u32
+        (ppm as f32 * 0.0254).round() as u32
     } else {
         72
     }

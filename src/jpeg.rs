@@ -115,7 +115,7 @@ impl App0 {
         if self.units == 1 {
             density
         } else if self.units == 2 {
-            (density as f32 * 2.54) as u32
+            (density as f32 * 2.54).round() as u32
         } else {
             72
         }

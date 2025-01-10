@@ -44,5 +44,5 @@ fn _dpi(ppm: u32) -> u32 {
     if ppm == 0 {
         return 96;
     }
-    (ppm as f32 * PPM_FACTOR) as u32
+    (ppm as f32 * PPM_FACTOR).round() as u32
 }

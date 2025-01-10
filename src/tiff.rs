@@ -87,7 +87,7 @@ fn _dpi(unit: u32, resolution: u32) -> u32 {
         72
     } else {
         let upi = if unit == 2 { 1.0 } else { 2.54 };
-        (resolution as f32 * upi) as u32
+        (resolution as f32 * upi).round() as u32
     }
 }
 
