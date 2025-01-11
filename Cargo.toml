@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 binrw = "0"
 thiserror = "1"
+const-crc32 = "1"
 
 [lib]
 name = "imagesize"
