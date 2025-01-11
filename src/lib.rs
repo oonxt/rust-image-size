@@ -24,7 +24,7 @@ pub enum Error {
     ParseError(#[from] binrw::Error)
 }
 pub type Result<T> = std::result::Result<T, Error>;
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Image {
     pub crc32: u32,
     pub dimensions: (u32, u32),
