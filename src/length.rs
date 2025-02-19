@@ -4,11 +4,12 @@ pub const _EMUS_PER_MM: f32 = 36000f32;
 pub const _EMUS_PER_PT: f32 = 12700f32;
 pub const _EMUS_PER_TWIP: f32 = 635f32;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum Length {
+    #[default]
+    Emu(f32),
     Inches(f32),
     Cm(f32),
-    Emu(f32),
     Mm(f32),
     Pt(f32),
     Twips(f32),
