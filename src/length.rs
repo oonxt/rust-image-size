@@ -4,15 +4,20 @@ pub const _EMUS_PER_MM: f32 = 36000f32;
 pub const _EMUS_PER_PT: f32 = 12700f32;
 pub const _EMUS_PER_TWIP: f32 = 635f32;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub enum Length {
-    #[default]
     Emu(f32),
     Inches(f32),
     Cm(f32),
     Mm(f32),
     Pt(f32),
     Twips(f32),
+}
+
+impl Default for Length {
+    fn default() -> Self {
+        Length::Emu(0f32)
+    }
 }
 
 impl Length {
