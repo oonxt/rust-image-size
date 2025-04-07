@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 binrw = "0"
-thiserror = "1"
+thiserror = "2"
 const-crc32 = "1"
 
 [lib]
